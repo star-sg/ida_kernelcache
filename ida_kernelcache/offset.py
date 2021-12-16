@@ -10,10 +10,10 @@ import re
 import idc
 import idautils
 
-import ida_utilities as idau
-import internal
-import kernel
-import stub
+from . import ida_utilities as idau
+from . import internal
+from . import kernel
+from . import stub
 
 _log = idau.make_log(1, __name__)
 
@@ -27,7 +27,7 @@ def initialize_data_offsets():
     # not actually an address. However, since kernel addresses are numerically much larger, the
     # chance of this happening is much less.
     for seg in idautils.Segments():
-        name = idc.SegName(seg)
+        name = idc.get_segm_name(seg)
         if not (name.endswith('__DATA_CONST.__const') or name.endswith('__got')
                 or name.endswith('__DATA.__data')):
             continue
@@ -97,7 +97,7 @@ def initialize_offset_symbols():
     """
     next_offset = internal.make_name_generator(kernelcache_offset_suffix)
     for ea in idautils.Segments():
-        segname = idc.SegName(ea)
+        segname = idc.get_segm_name(ea)
         if not segname.endswith('__got'):
             continue
         _log(2, 'Processing segment {}', segname)

@@ -8,15 +8,15 @@
 
 import idc
 
-import ida_utilities as idau
-import kernel
+from . import ida_utilities as idau
+from . import kernel
 
 _log = idau.make_log(0, __name__)
 
-idc.Til2Idb(-1, 'mach_header_64')
-idc.Til2Idb(-1, 'load_command')
-idc.Til2Idb(-1, 'segment_command_64')
-idc.Til2Idb(-1, 'section_64')
+idc.import_type(-1, 'mach_header_64')
+idc.import_type(-1, 'load_command')
+idc.import_type(-1, 'segment_command_64')
+idc.import_type(-1, 'section_64')
 
 _LC_SEGMENT_64 = 0x19
 
@@ -73,17 +73,17 @@ def _initialize_segments_in_kext(kext, mach_header, skip=[]):
         if start == end:
             _log(2, 'Skipping empty region {} at {:x}', newname, start)
             return
-        ida_segstart = idc.SegStart(start)
+        ida_segstart = idc.get_segm_start(start)
         if ida_segstart == idc.BADADDR:
             _log(0, "IDA doesn't think this is a real segment: {:x} - {:x}", start, end)
             return
-        ida_segend = idc.SegEnd(ida_segstart)
+        ida_segend = idc.get_segm_end(ida_segstart)
         if start != ida_segstart or end != ida_segend:
             _log(0, 'IDA thinks segment {} {:x} - {:x} should be {:x} - {:x}', newname, start, end,
                     ida_segstart, ida_segend)
             return
-        _log(2, 'Rename {:x} - {:x}: {} -> {}', start, end, idc.SegName(start), newname)
-        idc.SegRename(start, newname)
+        _log(2, 'Rename {:x} - {:x}: {} -> {}', start, end, idc.get_segm_name(start), newname)
+        idc.set_segm_name(start, newname)
     def process_gap(segname, gapno, start, end):
         mapped = idau.is_mapped(start)
         log_gap(gapno, start, end, mapped)
@@ -125,7 +125,7 @@ def initialize_segments():
         kext = kext_prelink_info.get('CFBundleIdentifier', None)
         mach_header = kext_prelink_info.get('_PrelinkExecutableLoadAddr', None)
         if kext is not None and mach_header is not None:
-            orig_kext = idc.SegName(mach_header).split(':', 1)[0]
+            orig_kext = idc.get_segm_name(mach_header).split(':', 1)[0]
             if '.kpi.' not in kext and orig_kext != kext:
                 _log(0, 'Renaming kext {} -> {}', orig_kext, kext)
             _log(1, 'Renaming segments in {}', kext)
@@ -137,10 +137,10 @@ def _initialize_kext_regions():
     """Get region information for each kext based on iOS 12's __PRELINK_INFO.__kmod_start.
 
     NOTE: This only accounts for __TEXT_EXEC, not the other segments."""
-    kmod_start = idc.SegByBase(idc.SegByName('__PRELINK_INFO.__kmod_start'))
+    kmod_start = idc.get_segm_by_sel(idc.selector_by_name('__PRELINK_INFO.__kmod_start'))
     if kmod_start == idc.BADADDR:
         return
-    for kmod in idau.ReadWords(kmod_start, idc.SegEnd(kmod_start)):
+    for kmod in idau.ReadWords(kmod_start, idc.get_segm_end(kmod_start)):
         _log(1, 'Found kmod {:x}', kmod)
         segments = list(_macho_segments_and_sections(kmod))
         if len(segments) != 1:
@@ -165,9 +165,9 @@ def kernelcache_kext(ea):
     on this function.
     """
     # TODO: This doesn't work on 12-merged kernelcaches!
-    name = idc.SegName(ea) or ''
+    name = idc.get_segm_name(ea) or ''
     if ':' in name:
-        return idc.SegName(ea).split(':', 1)[0]
+        return idc.get_segm_name(ea).split(':', 1)[0]
     if _kext_regions:
         for start, end, kext in _kext_regions:
             if start <= ea < end:

@@ -9,7 +9,7 @@ from collections import defaultdict
 
 import idc
 
-import ida_utilities as idau
+from . import ida_utilities as idau
 
 def make_name_generator(suffix, max_count=999999):
     """Create a unique name generator using the specified template factory."""

@@ -7,9 +7,9 @@
 
 import idc
 
-import ida_utilities as idau
-import classes
-import symbol
+from . import ida_utilities as idau
+from . import classes
+from . import symbol
 
 _log = idau.make_log(0, __name__)
 

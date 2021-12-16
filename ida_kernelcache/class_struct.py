@@ -122,12 +122,12 @@ import idc
 import idautils
 import idaapi
 
-import ida_utilities as idau
-import build_struct
-import classes
-import data_flow
-import symbol
-import vtable
+from . import ida_utilities as idau
+from . import build_struct
+from . import classes
+from . import data_flow
+from . import symbol
+from . import vtable
 
 _log = idau.make_log(2, __name__)
 
@@ -227,7 +227,7 @@ def _create_class_structs__slices(classinfo, endmarkers=True):
     if sid is None or sidf is None:
         _log(0, 'Could not create class structs for {}', classname)
         return None
-    assert all(not idc.IsUnion(s) for s in (sidf, sid))
+    assert all(not idc.is_union(s) for s in (sidf, sid))
     # Calculate the size of the ::fields struct.
     if classinfo.superclass:
         # If we have a superclass, our fields start after our superclass's fields end.
@@ -462,7 +462,7 @@ def _set_class_style(style):
         idau.struct_create('OSObject', union=want_union)
     else:
         # A style already exists. Check that the requested style matches.
-        is_union = bool(idc.IsUnion(sid))
+        is_union = bool(idc.is_union(sid))
         if is_union != want_union:
             raise ValueError('Incompatible style {}', style)
     # Set the appropriate functions based on the style.

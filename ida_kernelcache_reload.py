@@ -7,7 +7,8 @@
 #
 
 import sys
-for mod in sys.modules.keys():
+modules = list(sys.modules.keys())
+for mod in modules:
     if 'ida_kernelcache' in mod:
         del sys.modules[mod]
 

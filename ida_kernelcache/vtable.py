@@ -10,10 +10,10 @@ from itertools import islice, takewhile
 import idc
 import idautils
 
-from symbol import vtable_symbol_for_class
-import ida_utilities as idau
-import classes
-import stub
+from .symbol import vtable_symbol_for_class
+from . import ida_utilities as idau
+from . import classes
+from . import stub
 
 _log = idau.make_log(0, __name__)
 

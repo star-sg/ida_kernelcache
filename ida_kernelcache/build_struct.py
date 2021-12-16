@@ -11,7 +11,7 @@ import idc
 import idautils
 import idaapi
 
-import ida_utilities as idau
+from . import ida_utilities as idau
 
 _log = idau.make_log(3, __name__)
 
